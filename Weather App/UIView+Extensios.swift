@@ -15,7 +15,6 @@ extension UIView {
             self.bottomAnchor.constraint(equalTo: parent.bottomAnchor),
             self.leadingAnchor.constraint(equalTo: parent.leadingAnchor),
             self.trailingAnchor.constraint(equalTo: parent.trailingAnchor)
-            //,iconImageView.heightAnchor.constraint(equalToConstant: 33)
         ])
     }
 }

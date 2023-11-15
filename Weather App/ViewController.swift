@@ -159,10 +159,17 @@ class ViewController: UIViewController {
         return tableView
     }()
     
+    private let service = Service()
+    
     override func viewDidLoad() {
         //executado sempre que a view é carregada, uma só vez
         super.viewDidLoad()
         setupView()
+        
+        /** -27.20583,-49.623216 */
+        service.fetchData(city: City(lat: "-27.20583", lon: "-49.623216", name: "Rio do Sul")) { message in
+            print(message)
+        }
     }
     
     /**
