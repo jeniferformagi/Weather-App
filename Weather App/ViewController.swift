@@ -28,8 +28,8 @@ class ViewController: UIViewController {
     private lazy var cityLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 20)
-        label.text = "Rio do Sul"
+        label.font = UIFont.systemFont(ofSize: 18)
+        //label.text = "Rio do Sul"
         label.textAlignment = .center
         label.textColor = UIColor.primaryColor
         return label
@@ -39,7 +39,7 @@ class ViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 70, weight: .bold)
-        label.text = "35 C"
+        //label.text = "35 C"
         label.textAlignment = .left
         label.textColor = UIColor.primaryColor
         return label
@@ -56,7 +56,7 @@ class ViewController: UIViewController {
     private lazy var humidityLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Unidade"
+        label.text = "Umidade"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         label.textColor = UIColor.contrastColor
         return label
@@ -65,7 +65,7 @@ class ViewController: UIViewController {
     private lazy var humidityValueLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "1000mm"
+        //label.text = "1000mm"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         label.textColor = UIColor.contrastColor
         return label
@@ -91,7 +91,7 @@ class ViewController: UIViewController {
     private lazy var windValueLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "10km/h"
+        //label.text = "10km/h"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         label.textColor = UIColor.contrastColor
         return label
@@ -160,16 +160,32 @@ class ViewController: UIViewController {
     }()
     
     private let service = Service()
+    private let city = City(lat: "-27.20583", lon: "-49.623216", name: "Rio do Sul")
+    private var forecastResponse: ForecastResponse?
     
     override func viewDidLoad() {
         //executado sempre que a view é carregada, uma só vez
         super.viewDidLoad()
         setupView()
-        
-        /** -27.20583,-49.623216 */
-        service.fetchData(city: City(lat: "-27.20583", lon: "-49.623216", name: "Rio do Sul")) { message in
-            print(message)
+        fetchData()
+    }
+    
+    private func fetchData() {
+        service.fetchData(city: city) { [weak self] response in
+            self?.forecastResponse = response
+            DispatchQueue.main.async {
+                self?.loadData()
+            }
         }
+    }
+    
+    private func loadData() {
+        cityLabel.text = city.name
+        
+        temperatureLabel.text = "\(Int(forecastResponse?.current.temp ?? 35))°C"
+        humidityValueLabel.text = "\(forecastResponse?.current.humidity ?? 0)mm"
+        windValueLabel.text = "\(forecastResponse?.current.windSpeed ?? 0)km/h"
+        
     }
     
     /**
@@ -241,12 +257,13 @@ class ViewController: UIViewController {
             cityLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -15),
             cityLabel.heightAnchor.constraint(equalToConstant: 20),
             temperatureLabel.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: 12),
-            temperatureLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 26),
-            weatherIcon.heightAnchor.constraint(equalToConstant: 86),
-            weatherIcon.widthAnchor.constraint(equalToConstant: 86),
-            weatherIcon.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -26),
+            temperatureLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 18),
+            temperatureLabel.heightAnchor.constraint(equalToConstant: 71),
+            weatherIcon.heightAnchor.constraint(equalToConstant: 76),
+            weatherIcon.widthAnchor.constraint(equalToConstant: 76),
+            weatherIcon.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -18),
             weatherIcon.centerYAnchor.constraint(equalTo: temperatureLabel.centerYAnchor),
-            weatherIcon.leadingAnchor.constraint(equalTo: temperatureLabel.trailingAnchor, constant: 15)
+            weatherIcon.leadingAnchor.constraint(equalTo: temperatureLabel.trailingAnchor, constant: 8)
         ])
         
         /* criar uma constant e ativar depois
@@ -286,10 +303,20 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return forecastResponse?.hourly.count ?? 0
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyForecastCollectionViewCell.identifier, for: indexPath)
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyForecastCollectionViewCell.identifier,
+                                                      for: indexPath) as? HourlyForecastCollectionViewCell
+        else {
+            return UICollectionViewCell()
+        }
+        
+        let forecast = forecastResponse?.hourly[indexPath.row]
+        
+        
+        cell.loadData(time: <#T##String#>, icon: <#T##UIImage#>, temp: <#T##String#>)
+        
         return cell
     }
     

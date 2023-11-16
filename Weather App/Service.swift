@@ -21,7 +21,7 @@ class Service {
     
     /* forma de declarar uma func anônima */
     func fetchData(city: City, _ completion: @escaping (ForecastResponse?) -> Void) {
-        let urlString = "\(baseURL)?lat=\(city.lat)&lon=\(city.lon)&&appid=\(apiKey)"
+        let urlString = "\(baseURL)?lat=\(city.lat)&lon=\(city.lon)&&appid=\(apiKey)&units=metric"
         
         guard let url = URL(string: urlString) else {return}
         
@@ -29,22 +29,25 @@ class Service {
             
             guard let data else {
                 completion(nil)
-
                 return
             }
             
-            completion(nil)
+            do {
+                let forecastResponse = try JSONDecoder().decode(ForecastResponse.self, from: data)
+                completion(forecastResponse)
+                
+            } catch {
+                print(error)
+                completion(nil)
+            }
+            
+            
         }
         
         task.resume()
     }
 }
 
-
-// This file was generated from JSON Schema using quicktype, do not modify it directly.
-// To parse the JSON, add this file to your project and do:
-//
-//   let forecastResponse = try? JSONDecoder().decode(ForecastResponse.self, from: jsonData)
 
 // MARK: - ForecastResponse
 struct ForecastResponse: Codable {
