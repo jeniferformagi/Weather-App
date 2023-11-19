@@ -12,5 +12,4 @@ extension UIColor {
     static let contrastColor = UIColor(named: "contrastColor")
     static let softGrayPrimary = UIColor(named: "softGray")
     static let primaryColor = UIColor(named: "defaultColor")
-    
 }
